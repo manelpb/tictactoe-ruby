@@ -1,0 +1,47 @@
+<div id="board">
+	<% if !@cols.blank? %>
+		<table class="game-board">
+			<% @rows.each_with_index do |row, rindex| %>
+			<tr>
+			  	<% @cols.each_with_index do |col, cindex| %>
+			  		<td>
+				  		<div class="move play" data-col="<%=cindex%>" data-row="<%=rindex%>">
+				  			<% if @board.at(cindex).at(rindex) %>
+				  				<%= @board.at(cindex).at(rindex) %>
+				  			<% else %>
+				  				<small>Click here to play</small>
+				  			<% end %>
+
+				  		</div>
+			  		</td>
+			  	<% end %>
+		  	</tr>
+		  	<% end %>
+	  	</table>	  
+	<% end %>
+
+	<div id="scores">
+		<ul>
+			<li>Computer: <%= @scores ? @scores[0] : 0 %></li>
+			<li>Player X: <%= @scores ? @scores[1] : 0 %></li>
+		</ul>
+	</div>
+
+	<% if @result  %>
+		<div id="winner">
+			<div class="bg"></div>
+
+			<div class="content">
+				<% if @result[:status] == 'win' %>
+					<span><%=@result[:winner] %></span> <br /> won the game
+				<% elsif @result[:status] == 'tie' %>
+					<span>TIE</span>
+				<% end %>
+				
+				<br />
+
+				<input type="button" class="reset btn btn-primary" value="Reset" />
+			</div>
+		</div>
+	<% end %>
+</div>
