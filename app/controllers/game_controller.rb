@@ -5,12 +5,12 @@ class GameController < ApplicationController
 		@cols = [nil, nil, nil]
 		@rows = [nil, nil, nil]
 		@board = Array.new(3) { Array.new(3) }
-    	@scores = [0, 0]
+		@scores = [0, 0]
 
 		session[:cols] = @cols
 		session[:rows] = @rows
-    	session[:board] = @board
-    	session[:scores] = @scores
+		session[:board] = @board
+		session[:scores] = @scores
 	end
 
 	def reset
@@ -18,7 +18,7 @@ class GameController < ApplicationController
 
 		# save board
 		save_board(board)
-	
+		
 		# setup 
 		config_board
 
@@ -27,7 +27,7 @@ class GameController < ApplicationController
 
 	def play
 		board = session[:board]
-   		scores = session[:scores]
+		scores = session[:scores]
 
 		# user move
 		if user_move(board)
@@ -39,8 +39,8 @@ class GameController < ApplicationController
 
 	  		# check if the computer won
 	  		check_won
-  		end
-	
+	  	end
+	  	
 		# setup 
 		config_board
 
@@ -51,11 +51,11 @@ class GameController < ApplicationController
 		#show the scores
 	end
 
-  private 
-    
-    def user_move(board)
+	private 
+	
+	def user_move(board)
       	# get the user action
-		user_col = params[:col]
+      	user_col = params[:col]
       	user_row = params[:row]
 
 		#get the user move
@@ -69,11 +69,11 @@ class GameController < ApplicationController
 		else
 			return false
 		end
-    end
+	end
 
-    def computer_move(board)
+	def computer_move(board)
 		played = false
-      
+		
       	# checking if i can play
       	if count_moves_board(board) < 9
 
@@ -82,143 +82,143 @@ class GameController < ApplicationController
 	        # 1. Win: If the player has two in a row, they can place a third to get three in a row
 	        where_play = check_row(board, 'O')
 	        if !played && where_play != nil
-	          board[where_play[0].to_i][where_play[1].to_i] = "O"
-	          played = true
+	        	board[where_play[0].to_i][where_play[1].to_i] = "O"
+	        	played = true
 	        end
 
 	        # 2. Block: If the opponent has two in a row, the player must play the third themselves to block the opponent
 	        where_play = check_row(board, 'X')
 	        if !played && where_play != nil
-	          board[where_play[0].to_i][where_play[1].to_i] = "O"
-	          played = true
+	        	board[where_play[0].to_i][where_play[1].to_i] = "O"
+	        	played = true
 	        end
 
 	       	# 3. If center is empty, i will play there because for me the proability to win 
-	        if !played && can_play(board, [1,1])
-	        	board[1][1] = "O"
-	          	played = true
-	        end
+	       	if !played && can_play(board, [1,1])
+	       		board[1][1] = "O"
+	       		played = true
+	       	end
 
 	        # 4. Blocking an opponent's fork 
 	        # and 
 	        # 5. Center: A player marks the center.
 	        if !played
-	          where_play = check_blocking(board, "X", "O")
+	        	where_play = check_blocking(board, "X", "O")
 
-	          if where_play != nil
-	            board[where_play[0].to_i][where_play[1].to_i] = "O"
-	            played = true
-	          end
+	        	if where_play != nil
+	        		board[where_play[0].to_i][where_play[1].to_i] = "O"
+	        		played = true
+	        	end
 	        end
 
 	        # 6. Opposite corner: If the opponent is in the corner, the player plays the opposite corner.
 	        where_play = check_corner(board, 'X')
 	        if !played && where_play != nil
-	          board[where_play[0].to_i][where_play[1].to_i] = "O"
-	          played = true
+	        	board[where_play[0].to_i][where_play[1].to_i] = "O"
+	        	played = true
 	        end
 
 	        # 7. Empty corner: The player plays in a corner square
 	        where_play = check_extremity_available(true, board)
 	        if !played && where_play != nil
-	          board[where_play[0].to_i][where_play[1].to_i] = "O"
-	          played = true
+	        	board[where_play[0].to_i][where_play[1].to_i] = "O"
+	        	played = true
 	        end
 
 	        # 8. Empty side: The player plays in a middle square on any of the 4 sides.
 	        where_play = check_extremity_available(false, board)
 	        if !played && where_play != nil
-	          board[where_play[0].to_i][where_play[1].to_i] = "O"
-	          played = true
+	        	board[where_play[0].to_i][where_play[1].to_i] = "O"
+	        	played = true
 	        end
-      	end
-		save_board(board)
+	    end
+	    save_board(board)
 	end
 
-    def check_possibilites(board, type, value)
-      	possibilites = ['011', '110', '101']
+	def check_possibilites(board, type, value)
+		possibilites = ['011', '110', '101']
 
-      	possibilites.each_with_index do |pos, index|
-		    case type
-		    when 'top'
-		      if pos == '011' && board[0][0] == nil && board[1][0] == value && board[2][0] == value
-				return [0,0]
-		      elsif pos == '101' && board[0][0] == value && board[1][0] == nil && board[2][0] == value
-		        return [1,0]
-		      elsif pos == '110' && board[0][0] == value && board[1][0] == value && board[2][0] == nil
-		        return [2,0]
-		      end
-		    when 'middle'
-		      if pos == '011' && board[0][1] == nil && board[1][1] == value && board[2][1] == value
-		        return [0,1]
-		      elsif pos == '101' && board[0][1] == value &&  board[1][1] == nil && board[2][1] == value
-		        return [1,1]
-		      elsif pos == '110' && board[0][1] == value &&  board[1][1] == value && board[2][1] == nil
-		        return [2,1]
-		      end
-		    when 'bottom'
-		      if pos == '011' && board[0][2] == nil &&  board[1][2] == value && board[2][2] == value
-		        return [0,2]
-		      elsif pos == '101' && board[0][2] == value &&  board[1][2] == nil && board[2][2] == value
-		        return [1,2]
-		      elsif pos == '110' && board[0][2] == value &&  board[1][2] == value && board[2][2] == nil
-		        return [2,2]
-		      end   
-		    when 'leftdown'
-		      if pos == '011' && board[0][0] == nil &&  board[0][1] == value && board[0][2] == value
-		        return [0,0]
-		      elsif pos == '101' && board[0][0] == value &&  board[0][1] == nil && board[0][2] == value
-		        return [0,1]
-		      elsif pos == '110' && board[0][0] == value &&  board[0][1] == value && board[0][2] == nil
-		        return [0,2]
-		      end  
-		    when 'middown'
-		      if pos == '011' && board[1][0] == nil &&  board[1][1] == value && board[1][2] == value
-		        return [1,0]
-		      elsif pos == '101' && board[1][0] == value &&  board[1][1] == nil && board[1][2] == value
-		        return [1,1]
-		      elsif pos == '110' && board[1][0] == value &&  board[1][1] == value && board[1][2] == nil
-		        return [1,2]
-		      end  
-		    when 'rightdown'
-		      if pos == '011' && board[2][0] == nil &&  board[2][1] == value && board[2][2] == value
-		        return [2,0]
-		      elsif pos == '101' && board[2][0] == value &&  board[2][1] == nil && board[2][2] == value
-		        return [2,1]
-		      elsif pos == '110' && board[2][0] == value &&  board[2][1] == value && board[2][2] == nil
-		        return [2,2]
-		      end   
-		    when 'diagonal1'
-		      if pos == '011' && board[2][0] == nil &&  board[1][1] == value && board[0][2] == value
-		        return [2, 0]
-		      elsif pos == '101' && board[2][0] == value &&  board[1][1] == nil && board[0][2] == value
-		        return [1,1]
-		      elsif pos == '110' && board[2][0] == value &&  board[1][1] == value && board[0][2] == nil
-		        return [0, 2]
-		      end   
-		    when 'diagonal2'
-		      if pos == '011' && board[0][0] == nil &&  board[1][1] == value && board[2][2] == value
-		     	 return [0,0]
-		      elsif pos == '101' && board[0][0] == value &&  board[1][1] == nil && board[2][2] == value
-		        return [1,1]
-		      elsif pos == '110' && board[0][0] == value &&  board[1][1] == value && board[2][2] == nil
-		        return [2,2]
-		      end           
-		    end
-      	end
+		possibilites.each_with_index do |pos, index|
+			case type
+			when 'top'
+				if pos == '011' && board[0][0] == nil && board[1][0] == value && board[2][0] == value
+					return [0,0]
+				elsif pos == '101' && board[0][0] == value && board[1][0] == nil && board[2][0] == value
+					return [1,0]
+				elsif pos == '110' && board[0][0] == value && board[1][0] == value && board[2][0] == nil
+					return [2,0]
+				end
+			when 'middle'
+				if pos == '011' && board[0][1] == nil && board[1][1] == value && board[2][1] == value
+					return [0,1]
+				elsif pos == '101' && board[0][1] == value &&  board[1][1] == nil && board[2][1] == value
+					return [1,1]
+				elsif pos == '110' && board[0][1] == value &&  board[1][1] == value && board[2][1] == nil
+					return [2,1]
+				end
+			when 'bottom'
+				if pos == '011' && board[0][2] == nil &&  board[1][2] == value && board[2][2] == value
+					return [0,2]
+				elsif pos == '101' && board[0][2] == value &&  board[1][2] == nil && board[2][2] == value
+					return [1,2]
+				elsif pos == '110' && board[0][2] == value &&  board[1][2] == value && board[2][2] == nil
+					return [2,2]
+				end   
+			when 'leftdown'
+				if pos == '011' && board[0][0] == nil &&  board[0][1] == value && board[0][2] == value
+					return [0,0]
+				elsif pos == '101' && board[0][0] == value &&  board[0][1] == nil && board[0][2] == value
+					return [0,1]
+				elsif pos == '110' && board[0][0] == value &&  board[0][1] == value && board[0][2] == nil
+					return [0,2]
+				end  
+			when 'middown'
+				if pos == '011' && board[1][0] == nil &&  board[1][1] == value && board[1][2] == value
+					return [1,0]
+				elsif pos == '101' && board[1][0] == value &&  board[1][1] == nil && board[1][2] == value
+					return [1,1]
+				elsif pos == '110' && board[1][0] == value &&  board[1][1] == value && board[1][2] == nil
+					return [1,2]
+				end  
+			when 'rightdown'
+				if pos == '011' && board[2][0] == nil &&  board[2][1] == value && board[2][2] == value
+					return [2,0]
+				elsif pos == '101' && board[2][0] == value &&  board[2][1] == nil && board[2][2] == value
+					return [2,1]
+				elsif pos == '110' && board[2][0] == value &&  board[2][1] == value && board[2][2] == nil
+					return [2,2]
+				end   
+			when 'diagonal1'
+				if pos == '011' && board[2][0] == nil &&  board[1][1] == value && board[0][2] == value
+					return [2, 0]
+				elsif pos == '101' && board[2][0] == value &&  board[1][1] == nil && board[0][2] == value
+					return [1,1]
+				elsif pos == '110' && board[2][0] == value &&  board[1][1] == value && board[0][2] == nil
+					return [0, 2]
+				end   
+			when 'diagonal2'
+				if pos == '011' && board[0][0] == nil &&  board[1][1] == value && board[2][2] == value
+					return [0,0]
+				elsif pos == '101' && board[0][0] == value &&  board[1][1] == nil && board[2][2] == value
+					return [1,1]
+				elsif pos == '110' && board[0][0] == value &&  board[1][1] == value && board[2][2] == nil
+					return [2,2]
+				end           
+			end
+		end
 
-      	return nil
-    end
+		return nil
+	end
 
-    def can_play(board, coord)
+	def can_play(board, coord)
 		if board[coord[0]][coord[1]] == nil
 			return true
 		else 
 			return false
 		end
-    end
+	end
 
-    def check_row(board, who)
+	def check_row(board, who)
 		# check if the row has 2 places used
 		where_play = nil
 
@@ -252,11 +252,11 @@ class GameController < ApplicationController
 		end
 
 		return where_play
-    end
+	end
 
-    def check_corner(board, who)
-     	 where_play = nil
-      
+	def check_corner(board, who)
+		where_play = nil
+		
 		if board[0][0] == who && can_play(board, [2,2])
 			where_play = [2,2]
 		elsif board[2][2] == who && can_play(board, [0,0])
@@ -267,10 +267,10 @@ class GameController < ApplicationController
 			where_play = [2,0]
 		end
 
-      	return where_play
-    end
+		return where_play
+	end
 
-    def check_extremity_available(is_corner, board) 
+	def check_extremity_available(is_corner, board) 
 		where_play = nil
 
 		if is_corner
@@ -279,26 +279,26 @@ class GameController < ApplicationController
 			elsif board[2][0] == nil
 				where_play = [2,0]
 			elsif board[0][2] == nil
-			  	where_play = [0,2]
+				where_play = [0,2]
 			elsif board[2][2] == nil
-			  	where_play = [2,2]
+				where_play = [2,2]
 			end
 		else
 			if board[1][0] == nil
-			  	where_play = [1,0]
+				where_play = [1,0]
 			elsif board[0][1] == nil
-			  	where_play = [0,1]
+				where_play = [0,1]
 			elsif board[2][1] == nil
-			  	where_play = [2,1]
+				where_play = [2,1]
 			elsif board[1][2] == nil
-			  	where_play = [1,2]
+				where_play = [1,2]
 			end
 		end
 
 		return where_play
-    end
+	end
 
-    def check_blocking(board, who, opponent)
+	def check_blocking(board, who, opponent)
 		# Option 1: The player should create two in a row to force the opponent into defending, 
 		# as long as it doesn't result in them creating a fork. 
 
@@ -306,21 +306,21 @@ class GameController < ApplicationController
 		# "O" must not play a corner in order to win. (Playing a corner in this scenario creates a fork 
 		# for "X" to win.)
 
-	    if (board[0][0] == who || board[2][0] == who || board[0][2] == who || board[2][2] == who) && board[1][1] == opponent
+if (board[0][0] == who || board[2][0] == who || board[0][2] == who || board[2][2] == who) && board[1][1] == opponent
 	        # try to play anywhere, since it's not used
 	        while true  
-	          r = Random.new
-	          col = r.rand(0..2)
-	          row = r.rand(0..2)
+	        	r = Random.new
+	        	col = r.rand(0..2)
+	        	row = r.rand(0..2)
 
-	          if can_play(board, [col, row])
-	            return [col, row]
-	          end
+	        	if can_play(board, [col, row])
+	        		return [col, row]
+	        	end
 	        end
 	    end
-    end
+	end
 
-    def check_won
+	def check_won
 		board = session[:board]
 		col_win = nil
 		row_win = nil
@@ -331,33 +331,33 @@ class GameController < ApplicationController
 		points_horiz_o = nil
 
       	#check vertically
-		board.each_with_index do |col, cindex|
-			points_vert_x = 0
-			points_vert_o = 0
+      	board.each_with_index do |col, cindex|
+      		points_vert_x = 0
+      		points_vert_o = 0
 
-			board[cindex].each_with_index do |row, rindex|
-				col_win = cindex
-				row_win = rindex
+      		board[cindex].each_with_index do |row, rindex|
+      			col_win = cindex
+      			row_win = rindex
 
-				if row != nil
-					if row == 'X'
-						points_vert_x += 1
-					else
-						points_vert_o += 1
-					end
-				end
-			end
+      			if row != nil
+      				if row == 'X'
+      					points_vert_x += 1
+      				else
+      					points_vert_o += 1
+      				end
+      			end
+      		end
 
-			if points_vert_x == 3 || points_vert_o == 3
-				break
-			end
-		end
+      		if points_vert_x == 3 || points_vert_o == 3
+      			break
+      		end
+      	end
 
-		if points_vert_x == 3
-			winner = "X"
-		elsif points_vert_o == 3
-			winner = "O"
-		end
+      	if points_vert_x == 3
+      		winner = "X"
+      	elsif points_vert_o == 3
+      		winner = "O"
+      	end
 
 		# check only if there's no winner vertically
 		if winner == nil 
@@ -414,9 +414,9 @@ class GameController < ApplicationController
 		elsif (count_moves_board board) == 9 
 			@result = { 'status': 'tie' }
 		end
-    end
+	end
 
-    def count_moves_board(board)
+	def count_moves_board(board)
 		@total_moves = 0
 
 		board.each_with_index do |col, cindex|
@@ -428,16 +428,16 @@ class GameController < ApplicationController
 		end
 
 		return @total_moves
-    end
+	end
 
-    def config_board
+	def config_board
 		@cols = session[:cols]
 		@rows = session[:rows]
 		@board = session[:board]
 		@scores = session[:scores]
-    end
+	end
 
-    def save_scores(scores, who)
+	def save_scores(scores, who)
 		if who == "O"
 			scores[0] = scores[0] + 1
 		else
@@ -445,9 +445,9 @@ class GameController < ApplicationController
 		end
 
 		session[:scores] = scores
-    end
+	end
 
-    def save_board(board)
+	def save_board(board)
 		session[:board] = board
-    end
+	end
 end
