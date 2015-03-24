@@ -32,13 +32,13 @@ class GameController < ApplicationController
 		# user move
 		if user_move(board)
 	  		# check if the user won
-	  		check_won
+	  		if !check_won
+	  			# computer move
+	  			computer_move(board)
 
-	  		# computer move
-	  		computer_move(board)
-
-	  		# check if the computer won
-	  		check_won
+	  			# check if the computer won
+	  			check_won
+	  		end
 	  	end
 	  	
 		# setup 
@@ -270,18 +270,46 @@ class GameController < ApplicationController
 		return where_play
 	end
 
+	def count_possibilites(board, position, who)
+		# check if i have more opportunities to win
+		points_right = 0
+		points_left = 0
+				
+		#check vertically
+      	board[0].each_with_index do |row, rindex|
+			board.each_with_index do |cc, rr|
+				row_win = rindex
+				col_win = rr     
+
+      			if position == 'right' && cc[rindex] == who && rr == 2
+	      			points_right += 1
+	      		end
+
+	      		if position == 'left' && cc[rindex] == who && rr == 0
+	      			points_left += 1
+	      		end
+      		end
+      	end
+
+      	if position == 'right'
+      		return points_right
+      	elsif position == 'left'
+      		return points_left
+      	end
+	end
+
 	def check_extremity_available(is_corner, board) 
 		where_play = nil
 
 		if is_corner
-			if board[0][0] == nil
+			if board[0][0] == nil && (count_possibilites(board, 'right', 'X') == 0)
 				where_play = [0,0]
+			elsif board[2][2] == nil && (count_possibilites(board, 'left', 'X') == 0)
+				where_play = [2,2]
 			elsif board[2][0] == nil
 				where_play = [2,0]
 			elsif board[0][2] == nil
 				where_play = [0,2]
-			elsif board[2][2] == nil
-				where_play = [2,2]
 			end
 		else
 			if board[1][0] == nil
@@ -306,7 +334,7 @@ class GameController < ApplicationController
 		# "O" must not play a corner in order to win. (Playing a corner in this scenario creates a fork 
 		# for "X" to win.)
 
-if (board[0][0] == who || board[2][0] == who || board[0][2] == who || board[2][2] == who) && board[1][1] == opponent
+		if (board[0][0] == who || board[2][0] == who || board[0][2] == who || board[2][2] == who) && board[1][1] == opponent
 	        # try to play anywhere, since it's not used
 	        while true  
 	        	r = Random.new
@@ -408,12 +436,13 @@ if (board[0][0] == who || board[2][0] == who || board[0][2] == who || board[2][2
 		# print result
 		if winner != nil
 			save_scores(session[:scores], winner)
-
 			winner = winner == 'O' ? "Computer" : "You"
 			@result = { 'status': 'win', 'winner': winner }
 		elsif (count_moves_board board) == 9 
 			@result = { 'status': 'tie' }
 		end
+
+		return winner
 	end
 
 	def count_moves_board(board)
