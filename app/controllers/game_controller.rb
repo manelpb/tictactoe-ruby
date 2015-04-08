@@ -104,7 +104,6 @@ class GameController < ApplicationController
 	        # 5. Center: A player marks the center.
 	        if !played
 	        	where_play = check_blocking(board, "X", "O")
-
 	        	if where_play != nil
 	        		board[where_play[0].to_i][where_play[1].to_i] = "O"
 	        		played = true
@@ -334,14 +333,33 @@ class GameController < ApplicationController
 		# "O" must not play a corner in order to win. (Playing a corner in this scenario creates a fork 
 		# for "X" to win.)
 
-		if (board[0][0] == who || board[2][0] == who || board[0][2] == who || board[2][2] == who) && board[1][1] == opponent
-	        # try to play anywhere, since it's not used
-	        while true  
+		if (board[0][0] == who || 
+			board[2][0] == who || 
+			board[0][2] == who || 
+			board[2][2] == who) && 
+			board[1][1] == opponent
+	        
+	        while true
 	        	r = Random.new
 	        	col = r.rand(0..2)
 	        	row = r.rand(0..2)
 
-	        	if can_play(board, [col, row])
+	        	got_random = true
+
+	        	# checking if random is trying to get any corner
+	        	# because it can't get this
+	        	if (col == 0 && row == 0)
+	        		got_random = false
+	        	elsif (col == 2 && row == 0)
+	        		got_random = false
+	        	elsif (col == 0 && row == 2)
+	        		got_random = false
+	        	elsif (col == 2 && row == 2)
+	        		got_random = false
+	        	end
+	        	
+	        	# only accept if isn't a corner and i can play
+	        	if can_play(board, [col, row]) && got_random
 	        		return [col, row]
 	        	end
 	        end
